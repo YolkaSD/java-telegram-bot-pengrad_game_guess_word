@@ -1,7 +1,5 @@
 package org.example.game;
 
-import java.util.stream.IntStream;
-
 public class Game {
 
     private final String word;
