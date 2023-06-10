@@ -1,6 +1,5 @@
 package org.example;
 import org.example.configuration.SingletonConfiguration;
-import org.example.game.GameImpl;
 
 
 public class Main {
