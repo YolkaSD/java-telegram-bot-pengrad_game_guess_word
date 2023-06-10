@@ -1,16 +1,14 @@
 package org.example;
+
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
-import org.example.game.Game;
-import org.example.game.questionlist.QuestionDTOListImpl;
-
-import java.util.List;
+import org.example.game.GameImpl;
 
 public class Bot {
     private final TelegramBot telegramBot;
-    private Game guessWordGame;
+    private GameImpl guessWordGame;
 
     public Bot(String token) {
         telegramBot = new TelegramBot(token);
@@ -28,14 +26,16 @@ public class Bot {
         String inputMessage = extractInputMessage(update);
         if (inputMessage != null) {
             switch (inputMessage) {
-                case "/start" :
+                case "/start":
                     sendResponse(update, "Bot activated");
                     break;
-                case "/hangman" :
-                    guessWordGame = new Game("src/main/resources/words.json");
-                    sendResponse(update, "Игра началась. Я загадал слово - вы должны его отгадать!\n" + guessWordGame.getGuessedWord());
+                case "/hangman":
+                    guessWordGame = new GameImpl();
+                    sendResponse(update, "Игра началась. Я загадал слово - вы должны его отгадать!\n"
+                            + guessWordGame.getDescription()
+                            + "\n" + guessWordGame.getGivenWord());
                     break;
-                case "/hangman_stop" :
+                case "/hangman_stop":
                     if (guessWordGame != null) guessWordGame = null;
                     break;
                 default:

@@ -1,4 +1,4 @@
-package org.example.game.questionlist;
+package org.example.questionlist;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.QuestionDTO;

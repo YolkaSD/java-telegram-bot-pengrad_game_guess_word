@@ -1,4 +1,4 @@
-package org.example.game.questiongenerate;
+package org.example.questiongenerate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,11 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
 
-public class WordGenerator {
+public class WordGeneratorOldCode {
     private final File wordsFile ;
     Random random;
 
-    public WordGenerator(String filePath) {
+    public WordGeneratorOldCode(String filePath) {
         this.wordsFile = new File(filePath);
         this.random = new Random();
     }

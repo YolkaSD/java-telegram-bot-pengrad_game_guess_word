@@ -1,4 +1,4 @@
-package org.example.game.questionlist;
+package org.example.questionlist;
 
 import org.example.QuestionDTO;
 
