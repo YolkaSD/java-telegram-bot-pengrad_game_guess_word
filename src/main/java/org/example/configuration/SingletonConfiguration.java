@@ -1,4 +1,4 @@
-package org.example;
+package org.example.configuration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
@@ -27,7 +27,7 @@ public class SingletonConfiguration {
     }
 
     private File getFile() {
-        this.configFile = new File("src/main/resources/config.json");
+        configFile = new File("src/main/resources/config.json");
         if (!configFile.exists()) {
             throw new RuntimeException("Config file not found");
         }

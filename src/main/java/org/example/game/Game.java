@@ -1,7 +1,13 @@
 package org.example.game;
 
-public class Game {
+import org.example.QuestionDTO;
+import org.example.game.questiongenerate.WordGenerator;
+import org.example.game.questionlist.QuestionDTOListImpl;
 
+import java.util.List;
+
+public class Game {
+    private static final List<QuestionDTO> questionsDTOList = QuestionDTOListImpl.getInstance().readLinesFromJson("src/main/resources/wordsAndDescriptions.json");
     private final String word;
     private String guessedWord;
     private boolean inGame;

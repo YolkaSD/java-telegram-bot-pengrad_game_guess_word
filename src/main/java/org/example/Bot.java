@@ -1,14 +1,16 @@
 package org.example;
-
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.example.game.Game;
+import org.example.game.questionlist.QuestionDTOListImpl;
+
+import java.util.List;
 
 public class Bot {
     private final TelegramBot telegramBot;
-    Game guessWordGame;
+    private Game guessWordGame;
 
     public Bot(String token) {
         telegramBot = new TelegramBot(token);
@@ -17,14 +19,15 @@ public class Bot {
             for (Update update : updates) {
                 handleUpdate(update);
             }
+
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
     }
 
     private void handleUpdate(Update update) {
-        String userText = extractUserText(update);
-        if (userText != null) {
-            switch (userText) {
+        String inputMessage = extractInputMessage(update);
+        if (inputMessage != null) {
+            switch (inputMessage) {
                 case "/start" :
                     sendResponse(update, "Bot activated");
                     break;
@@ -36,12 +39,12 @@ public class Bot {
                     if (guessWordGame != null) guessWordGame = null;
                     break;
                 default:
-                    if (guessWordGame != null) hangman(update, userText);
+                    if (guessWordGame != null) hangman(update, inputMessage);
             }
         }
     }
 
-    private String extractUserText(Update update) {
+    private String extractInputMessage(Update update) {
         if (update.message() != null) {
             return update.message().text();
         }
@@ -73,28 +76,28 @@ public class Bot {
         telegramBot.execute(new SendMessage(chatId, message).replyToMessageId((int) messageId));
     }
 
-    private void hangman(Update update, String userText) {
-        if (userText.equals("/hangman_stop")) {
+    private void hangman(Update update, String inputMessage) {
+        if (inputMessage.equals("/hangman_stop")) {
             guessWordGame = null;
         } else {
-            String guessWord = guessWordGame.playGame(userText);
+            String guessWord = guessWordGame.playGame(inputMessage);
             String word = guessWordGame.getWord();
-            userText = userText.toUpperCase();
-            if (userText.length() > 1) {
-                if (word.equals(userText)) {
+            inputMessage = inputMessage.toUpperCase();
+            if (inputMessage.length() > 1) {
+                if (word.equals(inputMessage)) {
                     sendReplyResponse(update, "Вы угадали целое слово:\n" + word);
                 } else {
                     sendReplyResponse(update, "Увы, слово не верное");
                 }
             } else {
-                if (word.contains(userText.toUpperCase())) {
+                if (word.contains(inputMessage.toUpperCase())) {
                     sendReplyResponse(update, "Вы угадали, такая буква есть в слове:\n" + guessWord);
                 } else {
                     sendReplyResponse(update, "Увы, такой буквы нет");
                 }
             }
             if (!guessWordGame.gameStatus()) {
-                sendReplyResponse(update, "Вы победили\n");
+                sendResponse(update, update.message().from().username() + " победил!");
                 guessWordGame = null;
             }
         }

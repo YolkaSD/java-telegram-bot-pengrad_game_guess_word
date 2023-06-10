@@ -1,4 +1,4 @@
-package org.example.game;
+package org.example.game.questiongenerate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
