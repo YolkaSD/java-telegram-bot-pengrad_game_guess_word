@@ -1,11 +1,12 @@
 package org.example;
-import org.example.configuration.SingletonConfiguration;
-
 
 public class Main {
 
     public static void main(String[] args) {
-        SingletonConfiguration singletonConfiguration = SingletonConfiguration.getInstance();
-        new Bot(singletonConfiguration.getBotToken());
+        String botToken = args[0];
+        if (botToken == null) {
+            throw new IllegalArgumentException("Bot token doesn't exist!");
+        }
+        new Bot(botToken);
     }
 }

@@ -1,19 +1,17 @@
 package org.example.game;
 
+import com.pengrad.telegrambot.model.Update;
+
 import java.util.Random;
 
 public interface GameInterface {
-    int getId();
-
-    String getWord();
 
     String getDescription();
 
-    String playGame(String letter);
-
     String getGivenWord();
 
-    boolean gameStatus();
+    String tryToGuess(Update gameInput);
+
     default int setRandomListIndex(int start, int end) {
         Random random = new Random();
         if (start >= end) throw new IllegalArgumentException("Invalid range: start >= end");

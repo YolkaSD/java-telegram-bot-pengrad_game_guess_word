@@ -1,14 +1,17 @@
 package org.example.game;
 
+import com.pengrad.telegrambot.model.Update;
 import org.example.QuestionDTO;
-import org.example.questionlist.QuestionDTOListImpl;
+import org.example.configuration.Configuration;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class GameImpl implements GameInterface{
-    private static final List<QuestionDTO> questionsDTOList = QuestionDTOListImpl.getInstance().readLinesFromJson("src/main/resources/wordsAndDescriptions.json");
-    private int id;
+public class GameImpl implements GameInterface {
+
+    private static final List<QuestionDTO> questionsDTOList = Configuration.readLinesFromJson();
+
     private String word;
     private String givenWord;
     private String description;
@@ -17,24 +20,7 @@ public class GameImpl implements GameInterface{
     private String[] lettersInGivenWord;
 
     public GameImpl() {
-        gameStatus = true;
-        int index = setRandomListIndex(0, questionsDTOList.size());
-        setId(index);
-        setWord(index);
-        setDescription(index);
-        setGivenWord(word);
-        setLettersInWord();
-        setLettersInGivenWords();
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    public String getWord() {
-        return word;
+        init();
     }
 
     @Override
@@ -48,15 +34,36 @@ public class GameImpl implements GameInterface{
     }
 
     @Override
-    public boolean gameStatus() {
-        return gameStatus;
+    public String tryToGuess(Update gameInput) {
+        String inputMessage = gameInput.message().text();
+        String guessWord = this.playGame(inputMessage);
+        inputMessage = inputMessage.toUpperCase();
+
+        if (inputMessage.length() > 1) {
+            if (word.equals(inputMessage)) {
+                return "Вы угадали целое слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!";
+            } else {
+                return "Увы, слово не верное";
+            }
+        } else {
+            if (word.contains(inputMessage.toUpperCase())) {
+                String message = "Вы угадали, такая буква есть в слове:\n" + guessWord;
+                if (!gameStatus) {
+                    message += "\n\n" + gameInput.message().from().username() + " победил!";
+                }
+                return message;
+            } else {
+                return "Увы, такой буквы нет";
+            }
+        }
     }
 
-    @Override
-    public String playGame(String letter) {
+    private String playGame(String letter) {
         letter = letter.toUpperCase();
         if (letter.length() > 1) {
-            if (word.equals(letter)) givenWord = letter;
+            if (word.equals(letter)) {
+                givenWord = letter;
+            }
         } else {
             for (int i = 0; i < lettersInWord.length; i++) {
                 if (lettersInWord[i].equals(letter)) {
@@ -69,16 +76,15 @@ public class GameImpl implements GameInterface{
         return givenWord;
     }
 
-    private void setId(int index) {
-        this.id = questionsDTOList.get(index).getId();
-    }
-
-    private void setWord(int index) {
+    private void init() {
+        gameStatus = true;
+        int index = setRandomListIndex(0, questionsDTOList.size());
         this.word = questionsDTOList.get(index).getWord().toUpperCase();
-    }
-
-    private void setDescription(int index) {
+        System.out.println(word);
         this.description = questionsDTOList.get(index).getDescriptions();
+        setGivenWord(word);
+        lettersInWord = word.split("");
+        lettersInGivenWord = givenWord.split("");
     }
 
     private void setGivenWord(String word) {
@@ -91,14 +97,4 @@ public class GameImpl implements GameInterface{
             }
         }).collect(Collectors.joining());
     }
-
-    private void setLettersInWord() {
-        lettersInWord = word.split("");
-    }
-
-    private void setLettersInGivenWords() {
-        lettersInGivenWord = givenWord.split("");
-    }
-
-
 }
