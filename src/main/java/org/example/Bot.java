@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.example.game.GameImpl;
+import org.example.statistics.PlayersStatsManagerImpl;
 
 public class Bot {
     private static final String START = "/start";
@@ -19,6 +20,7 @@ public class Bot {
 
         telegramBot.setUpdatesListener(updates -> {
             for (Update update : updates) {
+                System.out.println(update);
                 handleUpdate(update);
             }
 
@@ -46,7 +48,13 @@ public class Bot {
                     }
                     break;
                 default:
-                    if (guessWordGame != null) hangman(update);
+                    if (guessWordGame != null) {
+                        if (guessWordGame.getStatus()) {
+                            hangman(update);
+                        } else {
+                            guessWordGame = null;
+                        }
+                    }
             }
         }
     }

@@ -3,14 +3,20 @@ package org.example.game;
 import com.pengrad.telegrambot.model.Update;
 import org.example.QuestionDTO;
 import org.example.configuration.Configuration;
+import org.example.statistics.PlayerStatsNode;
+import org.example.statistics.PlayersStatsManagerImpl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameImpl implements GameInterface {
 
     private static final List<QuestionDTO> questionsDTOList = Configuration.readLinesFromJson();
+
+    private final PlayersStatsManagerImpl playersStatsManager = new PlayersStatsManagerImpl();
 
     private String word;
     private String givenWord;
@@ -41,22 +47,33 @@ public class GameImpl implements GameInterface {
 
         if (inputMessage.length() > 1) {
             if (word.equals(inputMessage)) {
-                return "Вы угадали целое слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!";
+                gameStatus = false;
+                playersStatsManager.incrementCountOfGuessedWholeWords(gameInput);
+                return getMessageWinner(gameInput);
             } else {
+                playersStatsManager.incrementCountOfUnguessedWholeWords(gameInput);
                 return "Увы, слово не верное";
             }
         } else {
             if (word.contains(inputMessage.toUpperCase())) {
                 String message = "Вы угадали, такая буква есть в слове:\n" + guessWord;
+                playersStatsManager.incrementCountOfGuessedLetters(gameInput);
                 if (!gameStatus) {
-                    message += "\n\n" + gameInput.message().from().username() + " победил!";
+                    message = "\n\n" + getMessageWinner(gameInput);
+                    gameStatus = false;
                 }
                 return message;
             } else {
+                playersStatsManager.incrementCountOfUnguessedLetters(gameInput);
                 return "Увы, такой буквы нет";
             }
         }
     }
+
+    public boolean getStatus(){
+        return gameStatus;
+    }
+
 
     private String playGame(String letter) {
         letter = letter.toUpperCase();
@@ -96,5 +113,25 @@ public class GameImpl implements GameInterface {
                 return " ";
             }
         }).collect(Collectors.joining());
+    }
+
+    private String getStatisticsReport(Map<Long, PlayerStatsNode> statsNodeHashMap, Update update) {
+        StringBuilder statsMessage = new StringBuilder();
+        for (long key: statsNodeHashMap.keySet()) {
+            PlayerStatsNode node = statsNodeHashMap.get(key);
+            statsMessage
+                    .append("Gamer ").append(update.message().from().username()).append(":\n")
+                    .append("- Count of guessed letters: ").append(node.getCountOfGuessedLetters()).append("\n")
+                    .append("- Count of unguessed letters: ").append(node.getCountOfUnguessedLetters()).append("\n")
+                    .append("- Count of guessed whole words: ").append(node.getCountOfGuessedWholeWords()).append("\n")
+                    .append("- Count of unguessed whole words: ").append(node.getCountOfUnguessedWholeWords()).append("\n")
+                    .append("- Ratio of successful attempts to all attempts (percentage): ").append(node.getRatioOfSuccessfulAttemptsToAllAttempts()).append("%\n");
+        }
+        return statsMessage.toString();
+    }
+
+    private String getMessageWinner(Update gameInput) {
+        String stats = getStatisticsReport(playersStatsManager.getStatsNodeHashMap(), gameInput);
+        return "Вы угадали слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!\n\n" + stats;
     }
 }
