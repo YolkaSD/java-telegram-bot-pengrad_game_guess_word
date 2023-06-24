@@ -3,6 +3,7 @@ package org.example.game;
 import com.pengrad.telegrambot.model.Update;
 import org.example.QuestionDTO;
 import org.example.configuration.Configuration;
+import org.example.statistics.ManagerStatsInterface;
 import org.example.statistics.PlayerStatsNode;
 import org.example.statistics.PlayersStatsManagerImpl;
 
@@ -16,7 +17,7 @@ public class GameImpl implements GameInterface {
 
     private static final List<QuestionDTO> questionsDTOList = Configuration.readLinesFromJson();
 
-    private final PlayersStatsManagerImpl playersStatsManager = new PlayersStatsManagerImpl();
+    private final ManagerStatsInterface playersStatsManager = new PlayersStatsManagerImpl();
 
     private String word;
     private String givenWord;
@@ -115,12 +116,12 @@ public class GameImpl implements GameInterface {
         }).collect(Collectors.joining());
     }
 
-    private String getStatisticsReport(Map<Long, PlayerStatsNode> statsNodeHashMap, Update update) {
+    private String getStatisticsReport(Map<String, PlayerStatsNode> statsNodeHashMap, Update update) {
         StringBuilder statsMessage = new StringBuilder();
-        for (long key: statsNodeHashMap.keySet()) {
+        for (String key: statsNodeHashMap.keySet()) {
             PlayerStatsNode node = statsNodeHashMap.get(key);
             statsMessage
-                    .append("Gamer ").append(update.message().from().username()).append(":\n")
+                    .append("Gamer ").append(key).append(":\n")
                     .append("- Count of guessed letters: ").append(node.getCountOfGuessedLetters()).append("\n")
                     .append("- Count of unguessed letters: ").append(node.getCountOfUnguessedLetters()).append("\n")
                     .append("- Count of guessed whole words: ").append(node.getCountOfGuessedWholeWords()).append("\n")

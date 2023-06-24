@@ -4,37 +4,38 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PlayersStatsManagerImpl implements ManagerStatsInterface {
-    private static final Map<Long, PlayerStatsNode> statsNodeHashMap = new HashMap<>();
+    private static final Map<String, PlayerStatsNode> statsNodeHashMap = new HashMap<>();
 
     @Override
     public void incrementCountOfGuessedLetters(Update gameInput) {
-        long userId = gameInput.message().from().id();
-        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(userId, key -> new PlayerStatsNode());
+        String username = gameInput.message().from().username();
+        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(username, key -> new PlayerStatsNode());
         playerStatsNode.incrementCountOfGuessedLetters();
     }
 
     @Override
     public void incrementCountOfUnguessedLetters(Update gameInput) {
-        long userId = gameInput.message().from().id();
-        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(userId, key -> new PlayerStatsNode());
+        String username = gameInput.message().from().username();
+        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(username, key -> new PlayerStatsNode());
         playerStatsNode.incrementCountOfUnguessedLetters();
     }
 
     @Override
     public void incrementCountOfGuessedWholeWords(Update gameInput) {
-        long userId = gameInput.message().from().id();
-        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(userId, key -> new PlayerStatsNode());
+        String username = gameInput.message().from().username();
+        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(username, key -> new PlayerStatsNode());
         playerStatsNode.incrementCountOfGuessedWholeWords();
     }
 
     @Override
     public void incrementCountOfUnguessedWholeWords(Update gameInput) {
-        long userId = gameInput.message().from().id();
-        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(userId, key -> new PlayerStatsNode());
+        String username = gameInput.message().from().username();
+        PlayerStatsNode playerStatsNode = statsNodeHashMap.computeIfAbsent(username, key -> new PlayerStatsNode());
         playerStatsNode.incrementCountOfUnguessedWholeWords();
     }
 
-    public Map<Long, PlayerStatsNode> getStatsNodeHashMap() {
+    @Override
+    public Map<String, PlayerStatsNode> getStatsNodeHashMap() {
         return statsNodeHashMap;
     }
 
