@@ -1,13 +1,12 @@
 package org.example.game;
 
 import com.pengrad.telegrambot.model.Update;
-import org.example.QuestionDTO;
+import org.example.model.QuestionDTO;
 import org.example.configuration.Configuration;
 import org.example.statistics.ManagerStatsInterface;
 import org.example.statistics.PlayerStatsNode;
 import org.example.statistics.PlayersStatsManagerImpl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -121,12 +120,12 @@ public class GameImpl implements GameInterface {
         for (String key: statsNodeHashMap.keySet()) {
             PlayerStatsNode node = statsNodeHashMap.get(key);
             statsMessage
-                    .append("Gamer ").append(key).append(":\n")
-                    .append("- Count of guessed letters: ").append(node.getCountOfGuessedLetters()).append("\n")
-                    .append("- Count of unguessed letters: ").append(node.getCountOfUnguessedLetters()).append("\n")
-                    .append("- Count of guessed whole words: ").append(node.getCountOfGuessedWholeWords()).append("\n")
-                    .append("- Count of unguessed whole words: ").append(node.getCountOfUnguessedWholeWords()).append("\n")
-                    .append("- Ratio of successful attempts to all attempts (percentage): ").append(node.getRatioOfSuccessfulAttemptsToAllAttempts()).append("%\n");
+                    .append("Игрок ").append(key).append(":\n")
+                    .append("- Угаданных букв: ").append(node.getCountOfGuessedLetters()).append("\n")
+                    .append("- Не угаданных букв: ").append(node.getCountOfUnguessedLetters()).append("\n")
+                    .append("- Угаданных слов: ").append(node.getCountOfGuessedWholeWords()).append("\n")
+                    .append("- Не угаданных слов: ").append(node.getCountOfUnguessedWholeWords()).append("\n")
+                    .append("- Процент удач/недач: ").append(node.getRatioOfSuccessfulAttemptsToAllAttempts()).append("%\n");
         }
         return statsMessage.toString();
     }
