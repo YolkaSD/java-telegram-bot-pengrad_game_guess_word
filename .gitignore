@@ -1,3 +1,4 @@
 .idea
 pengradTelegramBotEx1.iml
 target
+src/main/resources/db.properties
