@@ -1,12 +1,16 @@
 package org.example.game;
 
 import com.pengrad.telegrambot.model.Update;
+import org.example.db.connections.ConnectionDB;
+import org.example.db.dao.PlayerStatsDAOImpl;
+import org.example.statistics.model.UserDTO;
 import org.example.model.QuestionDTO;
 import org.example.configuration.Configuration;
 import org.example.statistics.ManagerStatsInterface;
-import org.example.statistics.PlayerStatsNode;
+import org.example.statistics.model.PlayerStatsNode;
 import org.example.statistics.PlayersStatsManagerImpl;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -115,23 +119,26 @@ public class GameImpl implements GameInterface {
         }).collect(Collectors.joining());
     }
 
-    private String getStatisticsReport(Map<String, PlayerStatsNode> statsNodeHashMap, Update update) {
-        StringBuilder statsMessage = new StringBuilder();
-        for (String key: statsNodeHashMap.keySet()) {
+    private String getStatisticsReport(Map<UserDTO, PlayerStatsNode> statsNodeHashMap) {
+        StringBuilder statsMessage = new StringBuilder("\n Статистика игроков \n");
+        for (UserDTO key: statsNodeHashMap.keySet()) {
             PlayerStatsNode node = statsNodeHashMap.get(key);
             statsMessage
-                    .append("Игрок ").append(key).append(":\n")
+                    .append("Игрок ").append(key.getUsername()).append(":\n")
                     .append("- Угаданных букв: ").append(node.getCountOfGuessedLetters()).append("\n")
                     .append("- Не угаданных букв: ").append(node.getCountOfUnguessedLetters()).append("\n")
                     .append("- Угаданных слов: ").append(node.getCountOfGuessedWholeWords()).append("\n")
                     .append("- Не угаданных слов: ").append(node.getCountOfUnguessedWholeWords()).append("\n")
-                    .append("- Процент удач/недач: ").append(node.getRatioOfSuccessfulAttemptsToAllAttempts()).append("%\n");
+                    .append("- Процент удач/недач: ").append(node.getRatioOfSuccessfulAttemptsToAllAttempts()).append("%\n\n");
         }
         return statsMessage.toString();
     }
 
     private String getMessageWinner(Update gameInput) {
-        String stats = getStatisticsReport(playersStatsManager.getStatsNodeHashMap(), gameInput);
-        return "Вы угадали слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!\n\n" + stats;
+        Connection connectionDB = new ConnectionDB().connect();
+        PlayerStatsDAOImpl dao = new PlayerStatsDAOImpl(connectionDB);
+        playersStatsManager.getStatsNodeHashMap().forEach((userDTO, playerStatsNode) -> dao.insert(userDTO, playerStatsNode));
+        String stats = getStatisticsReport(playersStatsManager.getStatsNodeHashMap());
+        return "Вы угадали слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!\n" + stats + "\n";
     }
 }
