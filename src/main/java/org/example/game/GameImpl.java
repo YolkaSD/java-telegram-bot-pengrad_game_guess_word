@@ -4,7 +4,7 @@ import com.pengrad.telegrambot.model.Update;
 import org.example.db.connections.ConnectionDB;
 import org.example.db.dao.PlayerStatsDAOImpl;
 import org.example.statistics.model.UserDTO;
-import org.example.model.QuestionDTO;
+import org.example.game.model.QuestionDTO;
 import org.example.configuration.Configuration;
 import org.example.statistics.ManagerStatsInterface;
 import org.example.statistics.model.PlayerStatsNode;
@@ -120,7 +120,7 @@ public class GameImpl implements GameInterface {
     }
 
     private String getStatisticsReport(Map<UserDTO, PlayerStatsNode> statsNodeHashMap) {
-        StringBuilder statsMessage = new StringBuilder("\n Статистика игроков \n");
+        StringBuilder statsMessage = new StringBuilder("\nСтатистика игроков \n");
         for (UserDTO key: statsNodeHashMap.keySet()) {
             PlayerStatsNode node = statsNodeHashMap.get(key);
             statsMessage
@@ -137,8 +137,22 @@ public class GameImpl implements GameInterface {
     private String getMessageWinner(Update gameInput) {
         Connection connectionDB = new ConnectionDB().connect();
         PlayerStatsDAOImpl dao = new PlayerStatsDAOImpl(connectionDB);
-        playersStatsManager.getStatsNodeHashMap().forEach((userDTO, playerStatsNode) -> dao.insert(userDTO, playerStatsNode));
+        playersStatsManager.getStatsNodeHashMap().forEach((userDTO, playerStatsNode) -> {
+            if (dao.userExists(userDTO)) {
+                PlayerStatsNode oldStat = dao.getStatisticsFromDB(userDTO);
+                playerStatsNode.setCountOfUnguessedLetters(playerStatsNode.getCountOfUnguessedLetters() + oldStat.getCountOfUnguessedLetters());
+                playerStatsNode.setCountOfGuessedLetters(playerStatsNode.getCountOfGuessedLetters() + oldStat.getCountOfGuessedLetters());
+                playerStatsNode.setCountOfGuessedWholeWords(playerStatsNode.getCountOfGuessedWholeWords() + oldStat.getCountOfGuessedWholeWords());
+                playerStatsNode.setCountOfUnguessedWholeWords(playerStatsNode.getCountOfUnguessedWholeWords() + oldStat.getCountOfUnguessedWholeWords());
+                playerStatsNode.updateRatioOfSuccessfulAttemptsToAllAttempts();
+
+                dao.updateStatistics(userDTO, playerStatsNode);
+
+            } else {
+                dao.insert(userDTO, playerStatsNode);
+            }
+        });
         String stats = getStatisticsReport(playersStatsManager.getStatsNodeHashMap());
-        return "Вы угадали слово:\n" + word + "\n\n" + gameInput.message().from().username() + " победил!\n" + stats + "\n";
+        return "Игрок **" + gameInput.message().from().username() + "победил!" +  word + stats + "\n";
     }
 }

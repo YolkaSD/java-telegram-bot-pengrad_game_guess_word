@@ -1,7 +1,7 @@
 package org.example.configuration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.model.QuestionDTO;
+import org.example.game.model.QuestionDTO;
 
 import java.io.File;
 import java.io.IOException;

@@ -39,7 +39,7 @@ public class PlayerStatsNode {
         updateRatioOfSuccessfulAttemptsToAllAttempts();
     }
 
-    private void updateRatioOfSuccessfulAttemptsToAllAttempts() {
+    public void updateRatioOfSuccessfulAttemptsToAllAttempts() {
         ratioOfSuccessfulAttemptsToAllAttempts = (double)
                 (countOfGuessedLetters + countOfGuessedWholeWords) /
                 (countOfGuessedLetters + countOfUnguessedLetters + countOfGuessedWholeWords + countOfUnguessedWholeWords);
