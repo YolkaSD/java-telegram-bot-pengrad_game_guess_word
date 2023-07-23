@@ -1,7 +1,6 @@
 package org.example.statistics;
 import com.pengrad.telegrambot.model.Update;
-import org.example.statistics.model.PlayerStatsNode;
-import org.example.statistics.model.UserDTO;
+import org.example.statistics.model.PlayerStatsDTO;
 
 import java.util.Map;
 
@@ -15,5 +14,6 @@ public interface ManagerStatsInterface {
 
     void incrementCountOfUnguessedWholeWords(Update gameInput); // Количество неугаданных целых слов
 
-    Map<UserDTO, PlayerStatsNode> getStatsNodeHashMap();
+    Map<Long, PlayerStatsDTO> getStatsNodeHashMap();
+
 }

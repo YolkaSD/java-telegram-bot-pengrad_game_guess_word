@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
 public class ConnectionDB {
@@ -21,16 +20,9 @@ public class ConnectionDB {
         final String USERNAME = properties.getProperty("username");
         final String PASSWORD = properties.getProperty("password");
 
-        if (URL == null || USERNAME == null || PASSWORD == null) {
-            try {
-                throw new IllegalAccessException("Invalid db.properties file. Missing required properties.");
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
         try {
             return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

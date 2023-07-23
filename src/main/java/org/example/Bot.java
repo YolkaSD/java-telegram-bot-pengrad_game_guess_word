@@ -5,7 +5,8 @@ import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.example.game.GameImpl;
-import org.example.statistics.PlayersStatsManagerImpl;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bot {
     private static final String START = "/start";
@@ -13,15 +14,15 @@ public class Bot {
     private static final String HANGMAN_STOP = "/hangman_stop";
 
     private final TelegramBot telegramBot;
-    private GameImpl guessWordGame;
+
+    private Map<Long, GameImpl> gameMap = new HashMap<>();
 
     public Bot(String token) {
         telegramBot = new TelegramBot(token);
 
         telegramBot.setUpdatesListener(updates -> {
             for (Update update : updates) {
-                System.out.println(update);
-                handleUpdate(update);
+                new Thread(() -> handleUpdate(update)).start();
             }
 
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
@@ -30,29 +31,30 @@ public class Bot {
 
     private void handleUpdate(Update update) {
         String inputMessage = extractInputMessage(update);
+        long chatId = update.message().chat().id();
         if (inputMessage != null) {
             switch (inputMessage) {
                 case START:
                     sendResponse(update, "Bot activated");
                     break;
                 case HANGMAN:
-                    guessWordGame = new GameImpl();
+                    gameMap.put(chatId, new GameImpl());
                     sendResponse(update, "Игра началась. Я загадал слово - вы должны его отгадать!\n"
-                            + guessWordGame.getDescription()
-                            + "\n" + guessWordGame.getGivenWord());
+                            + gameMap.get(chatId).getDescription()
+                            + "\n" + gameMap.get(chatId).getGivenWord());
                     break;
                 case HANGMAN_STOP:
-                    if (guessWordGame != null) {
+                    if (gameMap.get(chatId) != null) {
                         sendResponse(update, "Игра преждевременно завершена!");
-                        guessWordGame = null;
+                        gameMap.remove(chatId);
                     }
                     break;
                 default:
-                    if (guessWordGame != null) {
-                        if (guessWordGame.getStatus()) {
+                    if (gameMap.get(chatId) != null) {
+                        if (gameMap.get(chatId).getStatus()) {
                             hangman(update);
                         } else {
-                            guessWordGame = null;
+                            gameMap.remove(chatId);
                         }
                     }
             }
@@ -92,7 +94,7 @@ public class Bot {
     }
 
     private void hangman(Update update) {
-        sendReplyResponse(update, guessWordGame.tryToGuess(update));
+        sendReplyResponse(update, gameMap.get(update.message().chat().id()).tryToGuess(update));
     }
 
 }

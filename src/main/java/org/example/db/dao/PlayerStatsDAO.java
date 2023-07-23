@@ -1,14 +1,13 @@
 package org.example.db.dao;
 
-import org.example.statistics.model.PlayerStatsNode;
-import org.example.statistics.model.UserDTO;
+import org.example.statistics.model.PlayerStatsDTO;
 
 public interface PlayerStatsDAO {
-    boolean insert(UserDTO userDTO, PlayerStatsNode playerStatsNode);
+    boolean insert(long userId, PlayerStatsDTO playerStatsNode);
 
-    boolean userExists(UserDTO user);
+    boolean userExists(long userId);
 
-    PlayerStatsNode getStatisticsFromDB(UserDTO userDTO);
+    PlayerStatsDTO getStatisticsFromDB(long userId);
 
-    boolean updateStatistics(UserDTO userDTO, PlayerStatsNode playerStatsNode);
+    boolean updateStatistics(long userId, PlayerStatsDTO playerStatsNode);
 }

@@ -3,11 +3,10 @@ package org.example.game;
 import com.pengrad.telegrambot.model.Update;
 import org.example.db.connections.ConnectionDB;
 import org.example.db.dao.PlayerStatsDAOImpl;
-import org.example.statistics.model.UserDTO;
 import org.example.game.model.QuestionDTO;
 import org.example.configuration.Configuration;
 import org.example.statistics.ManagerStatsInterface;
-import org.example.statistics.model.PlayerStatsNode;
+import org.example.statistics.model.PlayerStatsDTO;
 import org.example.statistics.PlayersStatsManagerImpl;
 
 import java.sql.Connection;
@@ -19,6 +18,7 @@ import java.util.stream.IntStream;
 public class GameImpl implements GameInterface {
 
     private static final List<QuestionDTO> questionsDTOList = Configuration.readLinesFromJson();
+    private static final Connection connectionDB = new ConnectionDB().connect();
 
     private final ManagerStatsInterface playersStatsManager = new PlayersStatsManagerImpl();
 
@@ -48,6 +48,7 @@ public class GameImpl implements GameInterface {
         String inputMessage = gameInput.message().text();
         String guessWord = this.playGame(inputMessage);
         inputMessage = inputMessage.toUpperCase();
+
 
         if (inputMessage.length() > 1) {
             if (word.equals(inputMessage)) {
@@ -119,12 +120,12 @@ public class GameImpl implements GameInterface {
         }).collect(Collectors.joining());
     }
 
-    private String getStatisticsReport(Map<UserDTO, PlayerStatsNode> statsNodeHashMap) {
+    private String getStatisticsReport(Map<Long, PlayerStatsDTO> statsNodeHashMap) {
         StringBuilder statsMessage = new StringBuilder("\nСтатистика игроков \n");
-        for (UserDTO key: statsNodeHashMap.keySet()) {
-            PlayerStatsNode node = statsNodeHashMap.get(key);
+        for (Long key: statsNodeHashMap.keySet()) {
+            PlayerStatsDTO node = statsNodeHashMap.get(key);
             statsMessage
-                    .append("Игрок ").append(key.getUsername()).append(":\n")
+                    .append("Игрок ").append(node.getUserName()).append(":\n")
                     .append("- Угаданных букв: ").append(node.getCountOfGuessedLetters()).append("\n")
                     .append("- Не угаданных букв: ").append(node.getCountOfUnguessedLetters()).append("\n")
                     .append("- Угаданных слов: ").append(node.getCountOfGuessedWholeWords()).append("\n")
@@ -135,24 +136,30 @@ public class GameImpl implements GameInterface {
     }
 
     private String getMessageWinner(Update gameInput) {
-        Connection connectionDB = new ConnectionDB().connect();
+
         PlayerStatsDAOImpl dao = new PlayerStatsDAOImpl(connectionDB);
-        playersStatsManager.getStatsNodeHashMap().forEach((userDTO, playerStatsNode) -> {
-            if (dao.userExists(userDTO)) {
-                PlayerStatsNode oldStat = dao.getStatisticsFromDB(userDTO);
+        playersStatsManager.getStatsNodeHashMap().forEach((userId, playerStatsNode) -> {
+            if (dao.userExists(userId)) {
+                PlayerStatsDTO oldStat = dao.getStatisticsFromDB(userId);
                 playerStatsNode.setCountOfUnguessedLetters(playerStatsNode.getCountOfUnguessedLetters() + oldStat.getCountOfUnguessedLetters());
                 playerStatsNode.setCountOfGuessedLetters(playerStatsNode.getCountOfGuessedLetters() + oldStat.getCountOfGuessedLetters());
                 playerStatsNode.setCountOfGuessedWholeWords(playerStatsNode.getCountOfGuessedWholeWords() + oldStat.getCountOfGuessedWholeWords());
                 playerStatsNode.setCountOfUnguessedWholeWords(playerStatsNode.getCountOfUnguessedWholeWords() + oldStat.getCountOfUnguessedWholeWords());
                 playerStatsNode.updateRatioOfSuccessfulAttemptsToAllAttempts();
-
-                dao.updateStatistics(userDTO, playerStatsNode);
+                dao.updateStatistics(userId, playerStatsNode);
 
             } else {
-                dao.insert(userDTO, playerStatsNode);
+                dao.insert(userId, playerStatsNode);
             }
         });
         String stats = getStatisticsReport(playersStatsManager.getStatsNodeHashMap());
-        return "Игрок **" + gameInput.message().from().username() + "победил!" +  word + stats + "\n";
+        return "Игрок " + gameInput.message().from().username() + " победил!\n" + stats + "\n";
+    }
+
+    @Override
+    public String toString() {
+        return "GameImpl{" +
+                "word='" + word + '\'' +
+                '}';
     }
 }
